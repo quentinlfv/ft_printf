@@ -6,155 +6,170 @@
 /*   By: qlefevre <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/31 17:28:14 by qlefevre          #+#    #+#             */
-/*   Updated: 2022/06/01 18:22:07 by qlefevre         ###   ########.fr       */
+/*   Updated: 2022/06/08 15:48:42 by qlefevre         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include <stdarg.h>
-#include <unistd.h>
-#include <stdio.h>
 
-void	ft_putnbr(int nbr);
+#include "ft_printf.h"
 
-void	ft_putchar(char c)
+void	ft_putchar(char c, int *len)
 {
-	write(1, &c, 1);
+	*len += write(1, &c, 1);
 }
 
-void	ft_putstr(char const *s)
+void	ft_putstr(char const *s, int *len)
 {
 	int	i;
 
 	i = 0;
-	while (s[i])
+	if (s == NULL)
+		ft_putstr("(null)", len);
+	else
 	{
-		ft_putchar(s[i]);
-		i++;
+		while (s[i])
+		{
+			ft_putchar(s[i], len);
+			i++;
+		}
 	}
 }
 
-void    ft_putnbr_tolow_hexa(unsigned long long nbr)
+void    ft_putnbr_u(unsigned int nbr, int *len)
 {
-	char	*hex;
-
-	hex = "01";
-        if (nbr == -2147483648)
-        {
-                ft_putnbr(-2);
-                ft_putnbr(147483648);
-        }
-        else if (nbr >= 0 && nbr < 2)
-        {
-                ft_putchar (hex[nbr]);
-        }
-        else if (nbr < 0)
-        {
-                ft_putchar('-');
-                ft_putnbr(nbr * (-1));
-        }
+        if (nbr < 10)
+                ft_putchar(nbr + 48, len);
         else
         {
-                ft_putnbr(nbr / 2);
-                ft_putnbr(nbr % 2);
+                ft_putnbr_u(nbr / 10, len);
+                ft_putnbr_u(nbr % 10, len);
         }
 }
 
-void    ft_putnbr_toup_hexa(int nbr)
+void    ft_putnbr_p(size_t nbr, int *len)
+{
+	char	*hex;
+
+	hex = "0123456789abcdef";
+        if (nbr < 16)
+                ft_putchar(hex[nbr], len);
+        else
+        {
+                ft_putnbr_p(nbr / 16, len);
+                ft_putnbr_p(nbr % 16, len);
+        }
+}
+
+void    ft_putnbr_x(unsigned int nbr, int *len)
+{
+        char    *hex;
+
+        hex = "0123456789abcdef";
+        if (nbr < 16)
+        {
+                ft_putchar(hex[nbr], len);
+        }
+        else
+        {
+                ft_putnbr_x(nbr / 16, len);
+                ft_putnbr_x(nbr % 16, len);
+        }
+}
+
+
+void    ft_putnbr_X(unsigned int nbr, int *len)
 {
         char    *hex;
 
         hex = "0123456789ABCDEF";
-        if (nbr == -2147483648)
+        if (nbr < 16)
         {
-                ft_putnbr(-2);
-                ft_putnbr(147483648);
-        }
-        else if (nbr >= 0 && nbr < 16)
-        {
-                ft_putchar (hex[nbr]);
-        }
-        else if (nbr < 0)
-        {
-                ft_putchar('-');
-                ft_putnbr(nbr * (-1));
+                ft_putchar(hex[nbr], len);
         }
         else
         {
-                ft_putnbr(nbr / 16);
-                ft_putnbr(nbr % 16);
+                ft_putnbr_X(nbr / 16, len);
+                ft_putnbr_X(nbr % 16, len);
         }
 }
 
-int	ft_formats(char c, va_list args)
+int	ft_formats(char c, va_list args, int *len)
 {
 	if (c == 'c')
-		ft_putchar(va_arg(args, int));
+		ft_putchar(va_arg(args, int), len);
 	else if (c == 's')
-		ft_putstr(va_arg(args, char *));
+		ft_putstr(va_arg(args, char *), len);
 	else if (c == 'd' || c == 'i')
-		ft_putnbr(va_arg(args, int));
+		ft_putnbr(va_arg(args, int), len);
 	else if (c == 'p')
-		ft_putnbr_tolow_hexa(va_arg(args, unsigned long long));
+	{
+		ft_putstr("0x", len);
+		ft_putnbr_p(va_arg(args, size_t), len);
+	}
 	else if (c == 'u')
-		ft_putnbr(va_arg(args, int));
+		ft_putnbr_u(va_arg(args, unsigned int), len);
 	else if (c == 'x')
-		ft_putnbr_tolow_hexa((unsigned long long)va_arg(args, int));
+		ft_putnbr_x(va_arg(args, unsigned int), len);
 	else if (c == 'X')
-		ft_putnbr_toup_hexa(va_arg(args, int));
+		ft_putnbr_X(va_arg(args, unsigned int), len);
 	else if (c == '%')
-		ft_putchar('%');
+		ft_putchar('%', len);
 	return (1);
 }
 
-void	ft_putnbr(int nbr)
+void	ft_putnbr(int nbr, int *len)
 {
 	if (nbr == -2147483648)
 	{
-		ft_putnbr(-2);
-		ft_putnbr(147483648);
+		ft_putnbr(-2, len);
+		ft_putnbr(147483648, len);
 	}
 	else if (nbr >= 0 && nbr < 10)
 	{
-		ft_putchar (nbr + 48);
+		ft_putchar (nbr + 48, len);
 	}
 	else if (nbr < 0)
 	{
-		ft_putchar('-');
-		ft_putnbr(nbr * (-1));
+		ft_putchar('-', len);
+		ft_putnbr(nbr * (-1), len);
 	}
 	else
 	{
-		ft_putnbr(nbr / 10);
-		ft_putnbr(nbr % 10);
+		ft_putnbr(nbr / 10, len);
+		ft_putnbr(nbr % 10, len);
 	}
 }
 
 int	ft_printf(const char *s, ...)
 {
 	int	i;
+	int	len;
 	va_list	ptr;
 
+	len = 0;
 	i = 0;
 	va_start(ptr, s);
 
 	while (s[i])
 	{
 		if (s[i] == '%')
-			i = i + ft_formats(s[i + 1], ptr);
+			i = i + ft_formats(s[i + 1], ptr, &len);
 		else
-			ft_putchar(s[i]);
+		{
+			ft_putchar(s[i], &len);
+		}
 		i++;
 	}
 	va_end(ptr);
-	return (i);
+	return (len);
 }
 
-int	main(void)
+/*int	main(void)
 {
 	char	c = 'a';
-	int	age = 10.35;
-	char	*s = "et je m'apelle Mucho\n";
+	int	age = -2147483648;
+	char	*s = NULL;
 
-	ft_printf("Bonjour quel age %c tu? \n-%X\n%p\n", c, age, s);
-	printf("Bonjour quel age %c tu? \n-%X\n%p", c, age, s);
+	printf("number of char = %d\n", ft_printf("Bonjour quel age %s tu? \n.%X\n%d\n\n", s, age, age));
+	printf("Bonjour quel age %c tu? \n.%X\n%s", c, age, s);
 	return (0);
-}
+}*/
