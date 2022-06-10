@@ -6,7 +6,7 @@
 /*   By: qlefevre <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/31 17:28:14 by qlefevre          #+#    #+#             */
-/*   Updated: 2022/06/08 15:48:42 by qlefevre         ###   ########.fr       */
+/*   Updated: 2022/06/10 15:10:48 by qlefevre         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,62 +34,61 @@ void	ft_putstr(char const *s, int *len)
 	}
 }
 
-void    ft_putnbr_u(unsigned int nbr, int *len)
+void	ft_putnbr_u(unsigned int nbr, int *len)
 {
-        if (nbr < 10)
-                ft_putchar(nbr + 48, len);
-        else
-        {
-                ft_putnbr_u(nbr / 10, len);
-                ft_putnbr_u(nbr % 10, len);
-        }
+	if (nbr < 10)
+		ft_putchar(nbr + 48, len);
+	else
+	{
+		ft_putnbr_u(nbr / 10, len);
+		ft_putnbr_u(nbr % 10, len);
+	}
 }
 
-void    ft_putnbr_p(size_t nbr, int *len)
+void	ft_putnbr_p(va_list arg, int *len)
+{
+	unsigned long	ptr;
+
+	ptr = va_arg(arg, unsigned long);
+	if ((void *)ptr == NULL)
+		ft_putstr("(nil)", len);
+	else
+	{
+		ft_putstr("0x", len);
+		ft_putnbr_x(ptr, len);
+	}
+}
+
+void	ft_putnbr_x(unsigned long nbr, int *len)
 {
 	char	*hex;
 
 	hex = "0123456789abcdef";
-        if (nbr < 16)
-                ft_putchar(hex[nbr], len);
-        else
-        {
-                ft_putnbr_p(nbr / 16, len);
-                ft_putnbr_p(nbr % 16, len);
-        }
+	if (nbr < 16)
+	{
+		ft_putchar(hex[nbr], len);
+	}
+	else
+	{
+		ft_putnbr_x(nbr / 16, len);
+		ft_putnbr_x(nbr % 16, len);
+	}
 }
 
-void    ft_putnbr_x(unsigned int nbr, int *len)
+void	ft_putnbr_upx(unsigned long nbr, int *len)
 {
-        char    *hex;
+	char	*hex;
 
-        hex = "0123456789abcdef";
-        if (nbr < 16)
-        {
-                ft_putchar(hex[nbr], len);
-        }
-        else
-        {
-                ft_putnbr_x(nbr / 16, len);
-                ft_putnbr_x(nbr % 16, len);
-        }
-}
-
-
-void    ft_putnbr_X(unsigned int nbr, int *len)
-{
-        char    *hex;
-
-        hex = "0123456789ABCDEF";
-        if (nbr < 16)
-        {
-                ft_putchar(hex[nbr], len);
-        }
-        else
-        {
-                ft_putnbr_X(nbr / 16, len);
-                ft_putnbr_X(nbr % 16, len);
-        }
+	hex = "0123456789ABCDEF";
+	if (nbr < 16)
+	{
+		ft_putchar(hex[nbr], len);
+	}
+	else
+	{
+		ft_putnbr_upx(nbr / 16, len);
+		ft_putnbr_upx(nbr % 16, len);
+	}
 }
 
 int	ft_formats(char c, va_list args, int *len)
@@ -101,16 +100,13 @@ int	ft_formats(char c, va_list args, int *len)
 	else if (c == 'd' || c == 'i')
 		ft_putnbr(va_arg(args, int), len);
 	else if (c == 'p')
-	{
-		ft_putstr("0x", len);
-		ft_putnbr_p(va_arg(args, size_t), len);
-	}
+		ft_putnbr_p(args, len);
 	else if (c == 'u')
 		ft_putnbr_u(va_arg(args, unsigned int), len);
 	else if (c == 'x')
 		ft_putnbr_x(va_arg(args, unsigned int), len);
 	else if (c == 'X')
-		ft_putnbr_X(va_arg(args, unsigned int), len);
+		ft_putnbr_upx(va_arg(args, unsigned int), len);
 	else if (c == '%')
 		ft_putchar('%', len);
 	return (1);
@@ -141,14 +137,13 @@ void	ft_putnbr(int nbr, int *len)
 
 int	ft_printf(const char *s, ...)
 {
-	int	i;
-	int	len;
+	int		i;
+	int		len;
 	va_list	ptr;
 
 	len = 0;
 	i = 0;
 	va_start(ptr, s);
-
 	while (s[i])
 	{
 		if (s[i] == '%')
@@ -164,12 +159,12 @@ int	ft_printf(const char *s, ...)
 }
 
 /*int	main(void)
-{
-	char	c = 'a';
-	int	age = -2147483648;
-	char	*s = NULL;
+  {
+  char	c = 'a';
+  int	age = -2147483648;
+  char	*s = NULL;
 
-	printf("number of char = %d\n", ft_printf("Bonjour quel age %s tu? \n.%X\n%d\n\n", s, age, age));
-	printf("Bonjour quel age %c tu? \n.%X\n%s", c, age, s);
-	return (0);
-}*/
+  printf("number of char = %d\n", ft_printf("Bonjour quel age %s tu? \n.%X\n%p\n\n", s, age, s));
+  printf("Bonjour quel age %c tu? \n.%X\n%p", c, age, s);
+  return (0);
+  }*/
